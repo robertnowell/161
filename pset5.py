@@ -43,5 +43,15 @@ def Dijkstra_st_path(G, s, t):
         path.append(current)
     path.reverse()
     print(path, d[t]) 
- 
-Dijkstra_st_path(G, 0, 3)
+
+# Dijkstra_st_path(G, 0, 3)
+
+def delicious(T):
+    D = [ 0 for i in range(len(T)) ]
+    D[0] = T[0]
+    D[1] = max(T[0], T[1])
+    for i in range(2, len(T)):
+        D[i] = max(D[i-2] + T[i], D[i-1])
+    return max(D)
+
+print(delicious([21, 4, 6, 20, 2, 5]))

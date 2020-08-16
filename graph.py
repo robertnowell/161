@@ -10,6 +10,7 @@ class Node():
 		self.color = None
 		self.depth = 0
 		self.path = []
+		self.deleted = False
 
 	def __repr__(self):
 		return "Node {}".format(self.data)
@@ -24,6 +25,27 @@ class Graph():
 		self.labeled = []
 		self.maxDepth = 0
 		self.maxPath = []
+
+	def get_neighbors(self, node):
+		neighbors = [ self.nodes[neighbor] for neighbor in self.edges[node.data] ]
+		return neighbors
+
+	def delete_neighbors(self, node):
+		i = 0
+		while i < len(self.edges[node.data]):
+			neighbor = self.edges[node.data][i]
+			neighboredges = self.edges[neighbor]
+			j = 0
+			while j < len(neighboredges):
+				n = neighboredges[j]
+				if n == node.data:
+					del self.edges[neighbor][j]
+				else:
+					j += 1
+			del self.edges[node.data][i]
+
+	def delete_node(self, node):
+		node.deleted = True
 
 	# def kosaraju(self):
 	# 	print( self.edges)
@@ -68,7 +90,7 @@ class Graph():
 	def _dfsTopo(self, node):
 		self.visited.add(node)
 		for neighbor in self.edges[node.data]:
-			neighbornode = self.nodes[neighbor-1]
+			neighbornode = self.nodes[neighbor]
 			if neighbornode not in self.visited:
 				print(("traversing edge {},{}".format(node.data, neighbornode.data)))
 				self._dfsTopo(neighbornode)
@@ -80,7 +102,7 @@ class Graph():
 		self.visited.add(node)
 		node.scc = self.numscc
 		for neighbor in self.edges[node.data]:
-			neighbornode = self.nodes[neighbor -1]
+			neighbornode = self.nodes[neighbor]
 			if neighbornode not in self.visited:
 				self._dfs_scc(neighbornode)
 
@@ -109,7 +131,7 @@ class Graph():
 				n.color = self.color
 				self.visited.add(n)
 				for neighbor in self.edges[n.data]:
-					neighbornode = self.nodes[neighbor-1]
+					neighbornode = self.nodes[neighbor]
 					q.append(neighbornode)
 		return True
 
@@ -127,7 +149,7 @@ class Graph():
 			n.color = color
 			oppositeColor = 1 if color == 0 else 0 
 			for neighbor in self.edges[n.data]:
-				neighbornode = self.nodes[neighbor-1]
+				neighbornode = self.nodes[neighbor]
 				if not self.bipartiteDFS(neighbornode, oppositeColor):
 					return False
 		return True
@@ -174,7 +196,7 @@ class Graph():
 		memo = [0]*len(self.nodes)
 		self.visited = set()
 		self.toposort()
-		print [ (node, node.label) for node in self.labeled]
+		print( [ (node, node.label) for node in self.labeled])
 		memo[0] = 1
 		for i in range(1,len(self.labeled)):
 			node = self.labeled[i]
@@ -189,7 +211,7 @@ class Graph():
 def createGraph1():
 	nodes = []
 	for i in range(1, 12):
-		nodes.append(Node(i))
+		nodes.append(Node(i-1))
 
 	edges = {
 		1: [3],
@@ -204,12 +226,16 @@ def createGraph1():
 		10: [8],
 		11: [6, 8],
 	}
+	for i in range(11):
+		edges[i] = edges[i+1]
+	edges[11] = []
+
 	return Graph(nodes, edges)
 
 def createGraph2():
 	nodes = []
 	for i in range(1, 11):
-		nodes.append(Node(i))
+		nodes.append(Node(i-1))
 
 	edges = {
 		1: [2, 5, 3],
@@ -223,27 +249,33 @@ def createGraph2():
 		9: [5, 7],
 		10: [6],
 	}
+	for i in range(11):
+		edges[i] = edges[i+1]
+	edges[11] = []
+
 	return Graph(nodes, edges)
 
 def createBipartite():
 	nodes = []
-	for i in range(1, 13):
+	for i in range(6):
 		nodes.append(Node(i))
 
 	edges = {
-		1: [2, 4],
-		2: [3, 1],
-		3: [2, 4],
+		0: [1, 3],
+		1: [2, 0],
+		2: [1, 3],
+		3: [0, 4],
 		4: [1, 5],
-		5: [2, 6],
-		6: [3],
+		5: [2],
 	}
+	for i in range(6):
+		edges[i] = edges[i]
 	return Graph(nodes, edges)
 
 def alsoCreateNotBipartite():
 	nodes = []
 	for i in range(1, 13):
-		nodes.append(Node(i))
+		nodes.append(Node(i-1))
 
 	edges = {
 		1: [2, 4],
@@ -253,12 +285,15 @@ def alsoCreateNotBipartite():
 		5: [2, 6],
 		6: [3, 2],
 	}
+	for i in range(6):
+		edges[i] = edges[i+1]
+	edges[6] = []
 	return Graph(nodes, edges)
 
 def createNotBipartite():
 	nodes = []
 	for i in range(1, 13):
-		nodes.append(Node(i))
+		nodes.append(Node(i-1))
 
 	edges = {
 		1: [2, 4, 5],
@@ -270,15 +305,23 @@ def createNotBipartite():
 		7: [5, 8],
 		8: [6, 7],
 	}
+	for i in range(6):
+		edges[i] = edges[i+1]
+	edges[6] = []
 	return Graph(nodes, edges)
 
 if __name__ == '__main__':
-	g = createGraph1()
+	# g = createGraph1()
 	# g.toposort()
 	# print(([n.label for n in g.nodes]))
 	# g = createNotBipartite()
 	# g = alsoCreateNotBipartite()
-	# g = createBipartite()
+	g = createBipartite()
+	print(g.edges)
+	print(g.get_neighors(g.nodes[1]))
+	g.delete_neighbors(g.nodes[0])
+	print(g.edges)
+	print(g.get_neighors(g.nodes[1]))
 	# print( g.testBiPartnessDFS())
 	# print( g.testBiPartnessBFS())
-	g.dpLongestPath()
+	# g.dpLongestPath()
